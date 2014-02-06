@@ -15,6 +15,7 @@ class Class(object):
         Constructor
         '''
         self.name = ''
+        self.package = ''
         self.parent = ''
         self.children = []
         self.fields = []
@@ -26,6 +27,9 @@ class Class(object):
     def setName(self, name):
         self.name = name
         
+    def setPackage(self, package):
+        self.package = package
+        
     def setParent(self, parent):
         self.parent = parent
     
@@ -34,6 +38,9 @@ class Class(object):
         
     def getName(self):
         return self.name
+    
+    def getPackage(self):
+        return self.package
     
     def getParent(self):
         return self.parent

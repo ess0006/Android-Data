@@ -30,18 +30,26 @@ class SizeMetrics(object):
     def extractData(self):
         for path in self.paths:
             self.extractFileData(path)
-        self.methodsPerClass = self.numMethods / float(self.numClasses)
-        self.instrPerMethod = self.numInstr / float(self.numMethods)
-        self.wmc = (self.cyclomatic + self.numMethods) / float(self.numClasses)
-        self.cyclomatic = (self.cyclomatic + self.numClasses) / float(self.numClasses) #number conditions plus one for each method
+        if self.numMethods == 0:
+            self.instrPerMethod = 0
+        else:
+            self.instrPerMethod = self.numInstr / float(self.numMethods)
+        if self.numClasses == 0:
+            self.methodsPerClass = 0
+            self.wmc = 0
+            self.cyclomatic = 0
+        else:
+            self.methodsPerClass = self.numMethods / float(self.numClasses)
+            self.wmc = (self.cyclomatic + self.numMethods) / float(self.numClasses)
+            self.cyclomatic = (self.cyclomatic + self.numClasses) / float(self.numClasses) #number conditions plus one for each method
         self.printData()
             
     def extractFileData(self, path):
         fileinput.close()
         for line in fileinput.input([path]):
-            if '.class ' in line:
+            if line.startswith('.class '):
                 self.numClasses = self.numClasses + 1
-            if '.method ' in line:
+            if line.startswith('.method '):
                 self.numMethods = self. numMethods + 1
             if len(line.strip()) > 0 and not line.strip()[0] == '.' and not line.strip()[0] == '#':
                 self.numInstr = self.numInstr + 1

@@ -14,6 +14,7 @@ import MVCMetrics
 ignoreFiles = ['BuildConfig.smali', 'R$attr.smali', 'R$dimen.smali', 'R$drawable.smali', 'R$id.smali',
 'R$layout.smali','R$menu.smali','R$string.smali','R$style.smali','R.smali']
 
+
 def getSourceCodeDirectoryPaths(root):
     os.chdir(root)
     dirNames = os.listdir(os.getcwd())
@@ -67,48 +68,54 @@ def extractData(location, market):
         print "*"*50
         i += 1
         
-        
-        manifestDataExt = mde.ManifestDataExtractor(decFolderPath)
-        
-        #TODO: When in loop, need to check that manifest is valid
-        if manifestDataExt.validateManifest():
-            #get app name and package name from manifest
-            ppName, packageName = parseManifest(manifestDataExt,decFolderPath)
+        try:
+            manifestDataExt = mde.ManifestDataExtractor(decFolderPath)
             
-            #get path for each source code file that we will consider
-            smaliPath = decFolderPath + '\\smali'
-            dirPaths = getSourceCodeDirectoryPaths(smaliPath)
-            #navigate using fully qualified packageName
-            for codeDir in dirPaths:
-                for root, dirs, files in os.walk(codeDir):
+            #TODO: When in loop, need to check that manifest is valid
+            if manifestDataExt.validateManifest():
+                #get app name and package name from manifest
+                ppName, packageName = parseManifest(manifestDataExt,decFolderPath)
+                
+                #get path for each source code file that we will consider
+                smaliPath = decFolderPath + '\\smali'
+                dirPaths = getSourceCodeDirectoryPaths(smaliPath)
+                #navigate using fully qualified packageName
+                for codeDir in dirPaths:
+                    for root, dirs, files in os.walk(codeDir):
+                        for file in files:
+                            if file not in ignoreFiles:
+                                sourceCodePaths.append(os.path.join(root, file))
+                                
+                print sourceCodePaths
+                
+                if len(sourceCodePaths) == 0:
+                    errorFile.write(f + ": No source code files")
+                    continue
+                
+                layoutPath = decFolderPath + '\\res\\layout'
+                for root, dirs, files in os.walk(layoutPath):
                     for file in files:
-                        if file not in ignoreFiles:
-                            sourceCodePaths.append(os.path.join(root, file))
-                            
-            print sourceCodePaths
-            
-            layoutPath = decFolderPath + '\\res\\layout'
-            for root, dirs, files in os.walk(layoutPath):
-                for file in files:
-                    layoutFilePaths.append(os.path.join(root, file))
-                    
-            print layoutFilePaths
-            
-            
-            #calculate size metrics
-            sizeMetrics = SizeMetrics.SizeMetrics(sourceCodePaths)
-            sizeMetrics.extractData()
-            
-            #calculate CK metrics
-            ckMetrics = CKMetrics.CKMetrics(sourceCodePaths, packageName)
-            ckMetrics.extractData()
-            
-            mvcMetrics =MVCMetrics.MVCMetrics(sourceCodePaths, layoutFilePaths)
-            mvcMetrics.extractData()
-            
-        else:
-            print "ERROR FOUND WITH FILE AndroidManifest.xml"
-            errorFile.write(f + ": ERROR FOUND WITH FILE AndroidManifest.xml")
+                        layoutFilePaths.append(os.path.join(root, file))
+                        
+                print layoutFilePaths
+                
+                
+                #calculate size metrics
+                sizeMetrics = SizeMetrics.SizeMetrics(sourceCodePaths)
+                sizeMetrics.extractData()
+                
+                #calculate CK metrics
+                ckMetrics = CKMetrics.CKMetrics(sourceCodePaths, packageName)
+                ckMetrics.extractData()
+                
+                mvcMetrics =MVCMetrics.MVCMetrics(sourceCodePaths, layoutFilePaths)
+                mvcMetrics.extractData()
+                
+            else:
+                print "ERROR FOUND WITH FILE AndroidManifest.xml"
+                errorFile.write(f + ": ERROR FOUND WITH FILE AndroidManifest.xml\n")
+        except:
+            errorFile.write(f + ": Error\n")
     errorFile.close()
         
 if __name__ == "__main__":

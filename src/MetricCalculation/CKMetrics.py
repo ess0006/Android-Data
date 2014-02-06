@@ -8,6 +8,9 @@ import Class
 import re
 import Method
 
+ignoreFiles = ["R.smali","R$attr.smali","R$dimen.smali","R$drawable.smali",
+               "R$id.smali","R$layout.smali","R$menu.smali","R$string.smali","R$style.smali"]
+
 class CKMetrics(object):
     '''
     classdocs
@@ -52,41 +55,54 @@ class CKMetrics(object):
             if ".class " in line:
                 if self.pkgpath not in line:
                     continue
+                curClass.setPackage(self.extractPackage(line))
                 curClass.setName(self.extractClassName(line))
-            elif ('.super ') in line:
+            elif line.startswith('.super '):
                 if(self.pkgpath in line):
                     curClass.setParent(self.extractClassName(line))
                 matches = re.findall("Landroid/app/(.*?)Activity", line)
                 curClass.isController = (len(matches) > 0)
-            elif('.field' in line):
+            elif(line.startswith('.field')):
                 fieldName = line[line.rfind(" ")+1:line.rfind(":")]
                 curClass.addField(fieldName)
                 if(' public ' in line or ' protected ' in line):
                     curClass.addPublicField(fieldName)
-            elif('.method ' in line):
+            elif(line.startswith('.method ')):
                 if('<init>' in line):
                     curMethod = Method.Method('constructor')
                 else:
                     curMethod = Method.Method(re.findall(" (.*?)\(", line[line.rfind(' '):])[-1])
                 curClass.addMethod(curMethod)
-            elif(self.pkgpath in line):
+            elif(";->" in line):
                 if(self.usesField(curClass, line)): #for LCOM
                     fieldName = line[line.rfind(";->")+3:line.rfind(":")]
                     curMethod.addFieldUsed(fieldName)
                     if fieldName in curClass.getPublicFields():
                             self.apd = self.apd + 1
                 else: #for CBO
-                    if ";->" in line and not curClass.isController:
-                        objName = line[line.rfind(self.pkgpath)+len(self.pkgpath):line.index(";->")]
+                    if not curClass.isController and self.refsNonJavaClass(line):
+                        objName = line[line.index("L"):line.index(";->")]
                         if not objName == curClass.getName() and not self.inSameTree(curClass, objName):
                             curClass.addCoupledObject(objName)
                 
         self.classes.append(curClass)
+        
+        
+    def refsNonJavaClass(self, line):
+        pkgRegex = "L(.*?);"
+        javaPkgRegex = "Ljava/(.*?)"
+        pkgMatches = re.findall(pkgRegex, line)
+        javaPkgRegex = re.findall(javaPkgRegex, line)
+        return len(pkgMatches) - len(javaPkgRegex) > 0
+    
+    def extractPackage(self, line):
+        pkg = line.split()[-1]
+        pkg = pkg[:pkg.rfind("/")]
+        return pkg
             
+    #Gets the class name
     def extractClassName(self, line):
-         classNameExp = self.pkgpath + "(.*?);"
-         name = re.findall(classNameExp, line)
-         return name[-1]
+        return line.split()[-1].replace(";","")
     
     def determineChildrenFromParents(self):
         for aClass in self.classes:
@@ -191,6 +207,8 @@ class CKMetrics(object):
         for aClass in self.classes:
             public = public + len(aClass.getPublicFields())
             total = total + len(aClass.getFields())
+        if total == 0:
+            return 0
         return (public / float(total)) * 100
     
     def usesField(self, curClass, line):
