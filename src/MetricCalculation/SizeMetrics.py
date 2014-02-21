@@ -71,7 +71,7 @@ class SizeMetrics(object):
     def getMethodsPerClass(self):
         return self.methodsPerClass
     
-    def getInstuctionsPerMethod(self):
+    def getInstructionsPerMethod(self):
         return self.instrPerMethod
     
     def getCyclomatic(self):

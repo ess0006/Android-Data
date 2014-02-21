@@ -6,7 +6,7 @@ Created on Jan 23, 2014
 
 class Class(object):
     '''
-    classdocs
+    Represents a java class
     '''
 
 

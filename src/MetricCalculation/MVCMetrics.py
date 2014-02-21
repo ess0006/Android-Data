@@ -41,7 +41,7 @@ class MVCMetrics(object):
         viewInitRegex = "new-instance(.*?)Landroid/widget/" + AndroidViews.getAndroidViewsRegex()
         isController = False
         for line in fileinput.input([path]):
-            if '.super ' in line:
+            if line.startswith('.super '):
                 matches = re.findall("Landroid/app/(.*?)Activity", line)
                 isController = (len(matches) > 0)
             else:

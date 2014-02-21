@@ -1,0 +1,2 @@
+INSERT INTO Ratings VALUES("slideme_Download Ball&amp;amp;#039;O&amp;amp;#039;Mania Winter Edition.apk",3.0,1)Resulted in Error 1062: Duplicate entry 'slideme_Download Ball&amp;amp;#039;O&amp;amp;#039;' for key 'PRIMARY'
+INSERT INTO Ratings VALUES("slideme_Download Ball&amp;amp;#039;O&amp;amp;#039;Mania Winter Edition.apk",3.0,1,4616)Resulted in Error 1062: Duplicate entry 'slideme_Download Ball&amp;amp;#039;O&amp;amp;#039;' for key 'PRIMARY'

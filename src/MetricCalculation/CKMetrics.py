@@ -52,7 +52,7 @@ class CKMetrics(object):
         fileinput.close()  
         curClass = Class.Class()
         for line in fileinput.input([path]):
-            if ".class " in line:
+            if line.startswith('.class '):
                 if self.pkgpath not in line:
                     continue
                 curClass.setPackage(self.extractPackage(line))

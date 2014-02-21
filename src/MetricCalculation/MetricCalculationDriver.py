@@ -10,6 +10,8 @@ import ManifestDataExtractor as mde
 import SizeMetrics
 import CKMetrics
 import MVCMetrics
+import DBWriter
+import sys
 
 ignoreFiles = ['BuildConfig.smali', 'R$attr.smali', 'R$dimen.smali', 'R$drawable.smali', 'R$id.smali',
 'R$layout.smali','R$menu.smali','R$string.smali','R$style.smali','R.smali']
@@ -47,6 +49,9 @@ def parseManifest(manifestDataExt,filePath):
 decFolderPath =  'C:\\apks\\EmployeeListApp_dec'#'C:\\apks\\EmployeeListApp_dec'
 
 def extractData(location, market):
+    db = DBWriter.DBWriter()
+    db.connect()
+    
     path = location+market
     files = os.listdir(path)
     directorySize = len(files)
@@ -62,6 +67,7 @@ def extractData(location, market):
         sourceCodePaths = []
         layoutFilePaths = []
         decFolderPath = path + "\\"+ f    
+        filename = f + ".apk"
         #PRINTING HEADER
         print "*"*50
         print "EXTRACTING DATA FROM FILE "+ str(i) +" OF "+ str(directorySize)
@@ -74,7 +80,7 @@ def extractData(location, market):
             #TODO: When in loop, need to check that manifest is valid
             if manifestDataExt.validateManifest():
                 #get app name and package name from manifest
-                ppName, packageName = parseManifest(manifestDataExt,decFolderPath)
+                appLabel, packageName = parseManifest(manifestDataExt,decFolderPath)
                 
                 #get path for each source code file that we will consider
                 smaliPath = decFolderPath + '\\smali'
@@ -103,20 +109,42 @@ def extractData(location, market):
                 #calculate size metrics
                 sizeMetrics = SizeMetrics.SizeMetrics(sourceCodePaths)
                 sizeMetrics.extractData()
+                numInstructions = sizeMetrics.getNumInstructions()
+                numMethods = sizeMetrics.getNumMethods()
+                numClasses = sizeMetrics.getNumClasses()
+                methodsPerClass = sizeMetrics.getMethodsPerClass()
+                instrPerMethod = sizeMetrics.getInstructionsPerMethod()
+                cyclomatic = sizeMetrics.getCyclomatic()
+                wmc = sizeMetrics.getWMC()
                 
                 #calculate CK metrics
                 ckMetrics = CKMetrics.CKMetrics(sourceCodePaths, packageName)
                 ckMetrics.extractData()
+                noc = ckMetrics.getNOC()
+                dit = ckMetrics.getDIT()
+                lcom = ckMetrics.getLCOM()
+                cbo = ckMetrics.getCBO()
+                ppiv = ckMetrics.getPPIV()
+                apd = ckMetrics.getAPD()
                 
                 mvcMetrics =MVCMetrics.MVCMetrics(sourceCodePaths, layoutFilePaths)
                 mvcMetrics.extractData()
+                mvc = mvcMetrics.getSepVCScore()
+                
+                db.writeAppTable(filename, appLabel, packageName, market)
+                db.writeSizeMetricsTable(filename, numInstructions, numMethods, numClasses, methodsPerClass, instrPerMethod, cyclomatic, wmc)
+                db.writeOOMetricsTable(filename, noc, dit, lcom, cbo, ppiv, apd)
+                db.writeMVCMetricsTable(filename, mvc)
                 
             else:
                 print "ERROR FOUND WITH FILE AndroidManifest.xml"
                 errorFile.write(f + ": ERROR FOUND WITH FILE AndroidManifest.xml\n")
         except:
-            errorFile.write(f + ": Error\n")
+            e = sys.exc_info()[0]
+            errorFile.write(f + ": " + str(e) +"\n")
     errorFile.close()
         
 if __name__ == "__main__":
-   extractData("C:\\apks\\decompiled\\","slideme")
+    extractData("C:\\apks\\decompiled\\","slideme")
+    extractData("C:\\apks\\decompiled\\","fdroid")
+    extractData("C:\\apks\\decompiled\\","appsapk")
