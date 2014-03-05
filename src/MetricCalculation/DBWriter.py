@@ -19,7 +19,7 @@ class DBWriter(object):
         
         
     def connect(self):
-        self.con =  mdb.connect('acadmysql.duc.auburn.edu', 'ess0006', 'esdb@dmin', 'ess0006_thesis_db');
+        self.con =  mdb.connect();
     
     def writeError(self,message):
         f = open("DB_write_error_log.txt", 'a')
