@@ -19,7 +19,12 @@ class DBWriter(object):
         
         
     def connect(self):
-        self.con =  mdb.connect();
+        host, username, password, db = readFile(self, 'C:\\apks\\db\\metricdb.txt')
+        return mdb.connect(host, username, password, db);
+
+    def readFile(self, filePath):
+        lines = tuple(open(filePath, 'r'))
+        return lines[0].replace("\n", ""), lines[1].replace("\n", ""), lines[2].replace("\n", ""), lines[3].replace("\n", "")
     
     def writeError(self,message):
         f = open("DB_write_error_log.txt", 'a')

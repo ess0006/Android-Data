@@ -1,5 +1,6 @@
-DBWriter
+
 '''
+DBWriter
 Created on Mar 29, 2012
 
 @author: Billy Symon
@@ -8,8 +9,13 @@ import MySQLdb as mdb
 import sys
 
 def connect():
-    return mdb.connect('localhost', 'root', '', 'thesis');
+    host, username, password, db = readFile('C:\\apks\\db\\dem_db.txt')
+    return mdb.connect(host, username, password, db);
 
+def readFile(filePath):
+    lines = tuple(open(filePath, 'r'))
+    return lines[0].replace("\n", ""), lines[1].replace("\n", ""), lines[2].replace("\n", ""), lines[3].replace("\n", "")
+    
 def writeError(message):
     f = open("DB_write_error_log.txt", 'a')
     f.write(message+"\n")
