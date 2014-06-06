@@ -10,21 +10,22 @@ import ManifestDataExtractor as mde
 import SizeMetrics
 import CKMetrics
 import MVCMetrics
+import OtherMetrics
 import DBWriter
 import sys
+import traceback
 
 ignoreFiles = ['BuildConfig.smali', 'R$attr.smali', 'R$dimen.smali', 'R$drawable.smali', 'R$id.smali',
 'R$layout.smali','R$menu.smali','R$string.smali','R$style.smali','R.smali']
 
 
-def getSourceCodeDirectoryPaths(root):
+def getSourceCodeDirectoryPaths(root, packageName):
     os.chdir(root)
     dirNames = os.listdir(os.getcwd())
-    if('android' in dirNames):
-        dirNames.remove('android')
+    firstIdentifier = packageName.split('.')[0]
+    secondIdentifier = packageName.split('.')[1]
     dirPaths = []
-    for name in dirNames:
-        dirPaths.append(root + "\\" + name)
+    dirPaths.append(root + "\\" + firstIdentifier + "\\" + secondIdentifier)
     return dirPaths
 
 def parseManifest(manifestDataExt,filePath):
@@ -84,7 +85,7 @@ def extractData(location, market):
                 
                 #get path for each source code file that we will consider
                 smaliPath = decFolderPath + '\\smali'
-                dirPaths = getSourceCodeDirectoryPaths(smaliPath)
+                dirPaths = getSourceCodeDirectoryPaths(smaliPath, packageName)
                 #navigate using fully qualified packageName
                 for codeDir in dirPaths:
                     for root, dirs, files in os.walk(codeDir):
@@ -95,7 +96,7 @@ def extractData(location, market):
                 print sourceCodePaths
                 
                 if len(sourceCodePaths) == 0:
-                    errorFile.write(f + ": No source code files")
+                    errorFile.write(f + ": No source code files\n")
                     continue
                 
                 layoutPath = decFolderPath + '\\res\\layout'
@@ -104,7 +105,6 @@ def extractData(location, market):
                         layoutFilePaths.append(os.path.join(root, file))
                         
                 print layoutFilePaths
-                
                 
                 #calculate size metrics
                 sizeMetrics = SizeMetrics.SizeMetrics(sourceCodePaths)
@@ -127,21 +127,34 @@ def extractData(location, market):
                 ppiv = ckMetrics.getPPIV()
                 apd = ckMetrics.getAPD()
                 
+                #calculate MVC metrics
                 mvcMetrics =MVCMetrics.MVCMetrics(sourceCodePaths, layoutFilePaths)
+                if appLabel == "3D Player":
+                    print ""
                 mvcMetrics.extractData()
                 mvc = mvcMetrics.getSepVCScore()
+                avgNumViewsInXML = mvcMetrics.getAvgNumViewsInXML()
+                maxNumViewsInXML = mvcMetrics.getMaxNumViewsInXML()
+                potBadToken = mvcMetrics.getPotentialBadTokenExceptions()
+                
+                #calculate other metrics
+                otherMetrics = OtherMetrics.OtherMetrics(sourceCodePaths, layoutFilePaths)
+                otherMetrics.extractData()
+                uncheckedBundles = otherMetrics.getNumUncheckedBundles()
                 
                 db.writeAppTable(filename, appLabel, packageName, market)
                 db.writeSizeMetricsTable(filename, numInstructions, numMethods, numClasses, methodsPerClass, instrPerMethod, cyclomatic, wmc)
                 db.writeOOMetricsTable(filename, noc, dit, lcom, cbo, ppiv, apd)
-                db.writeMVCMetricsTable(filename, mvc)
+                db.writeMVCMetricsTable(filename, mvc, avgNumViewsInXML, maxNumViewsInXML)
+                db.writeOtherMetricsTable(filename, uncheckedBundles, potBadToken)
                 
             else:
                 print "ERROR FOUND WITH FILE AndroidManifest.xml"
                 errorFile.write(f + ": ERROR FOUND WITH FILE AndroidManifest.xml\n")
         except:
-            e = sys.exc_info()[0]
-            errorFile.write(f + ": " + str(e) +"\n")
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            errorFile.write(f + ": " + ''.join('!! ' + line for line in lines) +"\n")
     errorFile.close()
         
 if __name__ == "__main__":

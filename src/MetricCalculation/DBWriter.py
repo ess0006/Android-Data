@@ -19,15 +19,15 @@ class DBWriter(object):
         
         
     def connect(self):
-        host, username, password, db = readFile(self, 'C:\\apks\\db\\metricdb.txt')
-        return mdb.connect(host, username, password, db);
+        host, username, password, db = self.readFile('C:\\apks\\db\\metric_db.txt')
+        self.con = mdb.connect(host, username, password, db);
 
     def readFile(self, filePath):
         lines = tuple(open(filePath, 'r'))
         return lines[0].replace("\n", ""), lines[1].replace("\n", ""), lines[2].replace("\n", ""), lines[3].replace("\n", "")
     
     def writeError(self,message):
-        f = open("DB_write_error_log.txt", 'a')
+        f = open("C:\\Users\\ess0006\\workspace\\Thesis\\src\\MetricCalculation\\DB_write_error_log.txt", 'a')
         f.write(message+"\n")
         f.close()
     
@@ -59,10 +59,15 @@ class DBWriter(object):
         command = command + "," + str(apd) + ")"
         self.executeDBCommand(command);
         
-    def writeMVCMetricsTable(self, filename, mvc):
-        command = "INSERT INTO MVCMetrics VALUES(\"" + filename + "\"," + str(mvc) + ")"
+    def writeMVCMetricsTable(self, filename, mvc, avgNumViewsInXML, maxNumViewsInXML):
+        command = "INSERT INTO MVCMetrics VALUES(\"" + filename + "\"," + str(mvc) + "," + str(avgNumViewsInXML) + "," + str(maxNumViewsInXML) +  ")"
         self.executeDBCommand(command);
         
     def writeRatingsTable(self, filename, rating, numRatings, numDownloads):
         command = "INSERT INTO Ratings VALUES(\"" + filename + "\"," + str(rating) + "," + str(numRatings) + "," + str(numDownloads) + ")"
         self.executeDBCommand(command);
+        
+    def writeOtherMetricsTable(self, filename, uncheckedBundles, potBadToken):
+        command = "INSERT INTO OtherMetrics VALUES(\"" + filename + "\"," + str(uncheckedBundles) + "," + str(potBadToken) + ")"
+        self.executeDBCommand(command);
+        

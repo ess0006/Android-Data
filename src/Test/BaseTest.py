@@ -23,7 +23,8 @@ class Test(unittest.TestCase):
             
         #get path for each source code file that we will consider
         smaliPath = self.decFolderPath + '\\smali'
-        dirPaths = MCD.getSourceCodeDirectoryPaths(smaliPath)
+        packageName = "com.example.employeelistapp"
+        dirPaths = MCD.getSourceCodeDirectoryPaths(smaliPath, packageName)
         #navigate using fully qualified packageName
         for codeDir in dirPaths:
             for root, dirs, files in os.walk(codeDir):
@@ -50,7 +51,7 @@ class Test(unittest.TestCase):
         self.assertEqual(sm.getNumMethods(), 25)
         self.assertEqual(sm.getNumInstructions(), 207)
         self.assertEqual(sm.getMethodsPerClass(), 5.0)
-        self.assertEqual(sm.getInstuctionsPerMethod(), 8.28)
+        self.assertEqual(sm.getInstructionsPerMethod(), 8.28)
         self.assertEqual(sm.getCyclomatic(), 1.2)
         self.assertEqual(sm.getWMC(), 5.2, .001)
         

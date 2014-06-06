@@ -23,7 +23,10 @@ class MVCMetrics(object):
         self.numLayoutFiles = len(self.layoutPaths)
         self.numViewsInController = 0
         self.numViewsNotInController = 0
+        self.numViewsInXML = 0
+        self.maxNumViewsInXML = 0
         self.sepVCScore = 0.0
+        self.potBadToken = 0
         
     def getNumberofFiles(self):
         return self.numFiles
@@ -38,9 +41,12 @@ class MVCMetrics(object):
     
     def extractSrcFileData(self, path):
         fileinput.close()
+        className = ""
         viewInitRegex = "new-instance(.*?)Landroid/widget/" + AndroidViews.getAndroidViewsRegex()
         isController = False
         for line in fileinput.input([path]):
+            if line.startswith(".source"):
+                className = line.split()[-1].replace("\"","").replace(".java","")
             if line.startswith('.super '):
                 matches = re.findall("Landroid/app/(.*?)Activity", line)
                 isController = (len(matches) > 0)
@@ -51,14 +57,24 @@ class MVCMetrics(object):
                         self.numViewsInController = self.numViewsInController + 1
                     else:
                         self.numViewsNotInController = self.numViewsNotInController + 1
+                if(isController):
+                    if"getApplicationContext()Landroid/content/Context" in line and not className in line:
+                        self.potBadToken = self.potBadToken + 1
+                        
     
     def extractLayoutFileData(self, path):
         fileinput.close()
+        tempMax = 0
         viewRegex = "<" + AndroidViews.getAndroidViewsRegex()
         for line in fileinput.input([path]):
                 numMatches = len(re.findall(viewRegex, line))
                 self.numViewsNotInController = self.numViewsNotInController + numMatches
-                
+                self.numViewsInXML = self.numViewsInXML + numMatches
+                tempMax = tempMax + numMatches
+        
+        if tempMax > self.maxNumViewsInXML:
+            self.maxNumViewsInXML = tempMax
+        
     def calculateSepVCScore(self):
         if(self.numViewsNotInController + self.numViewsInController == 0):
             return 0
@@ -70,11 +86,24 @@ class MVCMetrics(object):
     def getNumViewsNotInController(self):
         return self.numViewsNotInController
     
+    def getAvgNumViewsInXML(self):
+        if len(self.layoutPaths) == 0:
+            return 0
+        return float(self.numViewsInXML) / float(len(self.layoutPaths))
+    
+    def getMaxNumViewsInXML(self):
+        return self.maxNumViewsInXML
+    
     def getSepVCScore(self):
         return self.sepVCScore
+    
+    def getPotentialBadTokenExceptions(self):
+        return self.potBadToken
     
     def printData(self):
         print "Num views in controllers: " + str(self.numViewsInController)
         print "Num views not in controllers: " + str(self.numViewsNotInController)
+        print "# views in XML: " + str(self.numViewsInXML)
+        print "Max # views in an XML file: " + str(self.maxNumViewsInXML)
         print "Percentage of Views Defined Outside of Controllers: " + str(self.sepVCScore) + "%"
             
