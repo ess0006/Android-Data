@@ -70,4 +70,25 @@ class DBWriter(object):
     def writeOtherMetricsTable(self, filename, uncheckedBundles, potBadToken):
         command = "INSERT INTO OtherMetrics VALUES(\"" + filename + "\"," + str(uncheckedBundles) + "," + str(potBadToken) + ")"
         self.executeDBCommand(command);
+    
+    def writeAndroidObjectsTable(self, filename, objMap):
+        for val in objMap:
+            command = "INSERT INTO AndroidObjects VALUES(\"" + filename + "\",\"" + val + "\"," + str(objMap[val]) + ")"
+            self.executeDBCommand(command);
+            
+    def writeBadSmellMethodCallsTable(self, filename, show, dismiss, setContentView, createScaledBitmap, onKeyDown, isPlaying, unregisterReceiver, onBackPressed, showDialog, create):
+        command = "INSERT INTO BadSmellMethodCalls VALUES(\"" + filename + "\"," + str(dismiss) + "," + str(show) + "," + str(setContentView) + "," + str(createScaledBitmap) + "," + str(onKeyDown) + "," + str(isPlaying) + "," + str(unregisterReceiver) + "," + str(onBackPressed) + "," + str(showDialog) + "," + str(create)  + ")"
+        self.executeDBCommand(command);
+        
+    def writeUncheckedBadSmellMethodCallsTable(self, filename, show, dismiss, setContentView, createScaledBitmap, onKeyDown, isPlaying, unregisterReceiver, onBackPressed, showDialog, create):
+        command = "INSERT INTO UncheckedBadSmellMethodCalls VALUES(\"" + filename + "\"," + str(dismiss) + "," + str(show) + "," + str(setContentView) + "," + str(createScaledBitmap) + "," + str(onKeyDown) + "," + str(isPlaying) + "," + str(unregisterReceiver) + "," + str(onBackPressed) + "," + str(showDialog) + "," + str(create)  + ")"
+        self.executeDBCommand(command);
+        
+    def writeBatteryMetrics(self, filename, noTimeoutWakeLocks, locListeners, gpsUses, domParsers, saxParsers, xmlPullParsers):
+        command = "INSERT INTO BatteryMetrics VALUES(\"" + filename + "\"," + str(noTimeoutWakeLocks) + "," + str(locListeners) + "," + str(gpsUses) + "," + str(domParsers) + "," + str(saxParsers) + "," + str(xmlPullParsers) + ")"
+        self.executeDBCommand(command);
+        
+    def updateNumFragments(self,filename,numFragments):
+        command = "UPDATE OtherMetrics SET numFragments = " + str(numFragments) + " WHERE filename = \"" + filename + "\""
+        self.executeDBCommand(command);
         

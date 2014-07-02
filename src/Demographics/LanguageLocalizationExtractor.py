@@ -6,15 +6,14 @@ Created on Apr 14, 2012
 import os
 import DBWriter
 import re
+import sys
 
-dataDirectory = "C:\\Users\\Billy Symon\\Desktop\\Grad Research\\GRAD THESIS [BACKUP_DO_NOT_USE]\\Decompiled Files\\"
-markets = ["appsforadam", "andapponline", "apptown"]
+dataDirectory = "C:\\apks\\decompiled"
+markets = ["appsapk", "fdroid", "slideme"]
 
-slideMeDirectory ="C:\\Users\\Billy Symon\\Desktop\\Grad Research\\GRAD THESIS [BACKUP_DO_NOT_USE]\\Decompiled Files\\slideme\\"
-slideMeDirs = ["1","2","3","4","5"]
 
 def extractLanguageLocData(location, market):
-    path = location + market
+    path = location+'\\'+market
     files = os.listdir(path)
     directorySize = len(files)
     
@@ -34,18 +33,26 @@ def extractLanguageLocData(location, market):
         print "*"*50
         i += 1
         
-        if os.path.exists(resFilePath):
-            resContents = os.listdir(resFilePath)
-            for content in resContents:
-                #if content[0:7]=="values-":
-                if (re.match("values-..$",content) or re.match("values-..-r.", content)):
-                    languages.append(content[7:])
-        filename =  f+".apk"
-        if len(languages) > 0:
-            for language in languages:
-                DBWriter.writeLanguageLocDataEntry(filename, language)
-            print filename
-            print languages   
+        try:
+            if os.path.exists(resFilePath):
+                resContents = os.listdir(resFilePath)
+                for content in resContents:
+                    #if content[0:7]=="values-":
+                    if (re.match("values-..$",content) or re.match("values-..-r.", content)):
+                        languages.append(content[7:])
+            filename =  f+".apk"
+            if len(languages) > 0:
+                for language in languages:
+                    DBWriter.writeLanguageLocDataEntry(filename, language)
+                print filename
+                print languages
+            else:
+                print "No languages declared"
+        except:
+            e = sys.exc_info()[0]
+            print e
         
-extractLanguageLocData(slideMeDirectory, slideMeDirs[4])
- 
+
+#extractLanguageLocData(dataDirectory, markets[0])
+#extractLanguageLocData(dataDirectory, markets[1])
+extractLanguageLocData(dataDirectory, markets[2])

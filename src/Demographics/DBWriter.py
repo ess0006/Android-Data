@@ -107,3 +107,11 @@ def writeLayoutLocDataEntry(fileName, locData):
 def writeDrawableLocDataEntry(fileName, locData):
     command = "INSERT INTO drawable_loc_data VALUES(\""+fileName+"\",\" "+locData+"\")"
     executeDBCommand(command);
+
+def updateMasterMinSDK(fileName,sdk):
+    command = "UPDATE master SET minSDKLevel = \'" + sdk + "\' WHERE filename = " + "\'" + fileName + "\'"
+    executeDBCommand(command);
+    
+def updateMasterTargetSDK(fileName,sdk):
+    command = "UPDATE master SET targetSDKLevel = \'" + sdk + "\' WHERE filename = " + "\'" + fileName + "\'"
+    executeDBCommand(command);

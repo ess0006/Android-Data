@@ -23,6 +23,7 @@ class OtherMetrics(object):
         self.numLayoutFiles = len(self.layoutPaths)
         self.numBundles = 0
         self.numCheckedBundles = 0
+        self.objMap = {}
         
     def getNumberofFiles(self):
         return self.numFiles
@@ -37,6 +38,7 @@ class OtherMetrics(object):
     def extractSrcFileData(self, path):
         fileinput.close()
         bundleAssignment = ".local (.*?):Landroid/os/Bundle;"
+        androidObj = "Landroid/(.*?)/(.*?);";
         bundleRegisters = []
         for line in fileinput.input([path]):
             matches = re.findall(bundleAssignment, line)
@@ -56,6 +58,19 @@ class OtherMetrics(object):
                             regName = reg
                     if regName != "":
                         bundleRegisters.remove(regName)
+            objMatches = re.findall(androidObj, line)
+            if len(objMatches) > 0:
+                for tuple in objMatches:
+                    list = []
+                    list.append('android')
+                    list.append(tuple[0])
+                    list.append(tuple[1])
+                    fulQual = '.'.join(list)
+                    fulQual = fulQual.replace('$', '.')
+                    if fulQual in self.objMap:
+                        self.objMap[fulQual] = self.objMap[fulQual] + 1
+                    else:
+                        self.objMap[fulQual] = 1
     
     def extractLayoutFileData(self, path):
         fileinput.close()
@@ -67,6 +82,9 @@ class OtherMetrics(object):
     
     def getNumUncheckedBundles(self):
         return self.numBundles - self.numCheckedBundles
+    
+    def getObjectMap(self):
+        return self.objMap
     
     def printData(self):
         print ""

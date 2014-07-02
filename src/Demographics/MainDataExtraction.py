@@ -2,6 +2,9 @@ import os
 import xml.dom.minidom as minidom
 import DBWriter
 import sys
+import re
+import fileinput
+import traceback
 
 dataDirectory = "C:\\apks\\decompiled"
 markets = ["appsapk", "fdroid", "slideme"]
@@ -64,7 +67,7 @@ def extractData(location, market):
                 print "Fully Qualified Name -> " + appFQName
               
                 #EXTRACTING MIN SDK LEVEL
-                minSDKLevel = extractMinSDKLevel(manifest)
+                minSDKLevel, targetSDKLevel = extractMinSDKLevel(filePath)
                 print "Minimum SDK Level -> " + minSDKLevel
                 
                 #EXTRACTING PERMISSIONS USED
@@ -209,7 +212,7 @@ def extractData(location, market):
                 print market
                 print fileSize
                 print permissionsUsed
-                DBWriter.writeAppInfoTableEnrty(fileName, market, fileSize, appLabel, appFQName)
+                """DBWriter.writeAppInfoTableEnrty(fileName, market, fileSize, appLabel, appFQName)
                 DBWriter.writePermissionsInfoTableEnrty(fileName, numPermissionsUsed, numPermissionsSetUp, numPremissionsRequired)
                 DBWriter.writePermissionsRequestedTableEnrty(fileName, permissionsUsed)
                 DBWriter.writePermissionsSetUpTableEnrty(fileName, permissionsSetUp)
@@ -222,7 +225,8 @@ def extractData(location, market):
                 DBWriter.writeAditionalInfoTableEnrty(fileName, numLibraries, numLayouts, numStrings, minSDKLevel, altLayouts, altStrings)
                 DBWriter.writeLibrariesTableEnrty(fileName, libraries)
                 DBWriter.writeMasterEntry(fileName, market, fileSize, appLabel, appFQName, numPermissionsUsed, numPermissionsSetUp, numPremissionsRequired, numActivities, numServices, numReceivers, numProviders, numLibraries, numLayouts, numStrings, minSDKLevel, altLayouts, altStrings)
-                
+                DBWriter.updateMasterMinSDK(fileName, minSDKLevel)"""
+                DBWriter.updateMasterTargetSDK(fileName, targetSDKLevel)
                 print ""  
                                        
             else:
@@ -230,8 +234,9 @@ def extractData(location, market):
                 print ""
                 
         except:
-            e = sys.exc_info()[0]
-            writeError("XXXXX"+filePath, "Eror in driver body")
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            writeError(filePath,''.join('!! ' + line for line in lines) +"\n")
         
 def getFileSize(start_path):
     total_size = 0
@@ -348,7 +353,7 @@ def extractPermissionsUsed(manifest):
         permissionsUsed.append(permission)
     return permissionsUsed
 
-def extractMinSDKLevel(manifest):
+"""def extractMinSDKLevel(manifest):
     tag = manifest.getElementsByTagName("uses-sdk")
     if len(tag) > 0:
         for item in tag:
@@ -356,6 +361,20 @@ def extractMinSDKLevel(manifest):
             return sdkLevel
     else:
         return "UNKNOWN"
+"""
+
+def extractMinSDKLevel(path):
+    fileinput.close()
+    min = "UNKNOWN"
+    target = "UNKNOWN"
+    for line in fileinput.input([path+"\\apktool.yml"]):
+        matches = re.findall("minSdkVersion: \'(.*?)\'", line)
+        if len(matches) > 0:
+            min = matches[0]
+        matches = re.findall("targetSdkVersion: \'(.*?)\'", line)
+        if len(matches) > 0:
+            target = matches[0]
+    return min, target
 
 def extractFQName(manifest):
     tag = manifest.getElementsByTagName("manifest")

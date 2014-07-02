@@ -5,19 +5,23 @@ Created on Mar 15, 2014
 
 @author: Eric
 '''
-
 if __name__ == '__main__':
     pass
-
-db = MySQLdb.connect(host="acadmysql.duc.auburn.edu", port=3306, user="ess0006", passwd="esdb@dmin", db = "ess0006_thesis_db")
+def readFile( filePath):
+    lines = tuple(open(filePath, 'r'))
+    return lines[0].replace("\n", ""), lines[1].replace("\n", ""), lines[2].replace("\n", ""), lines[3].replace("\n", "")
+host, username, password, db = readFile('C:\\apks\\db\\metric_db.txt')
+db = mdb.connect(host, username, password, db);
 cursor = db.cursor()
 
-cursor.execute("SELECT filename, mvc FROM MVCMetrics limit 0, 20000;")
+cursor.execute("SELECT * FROM MVCMetrics limit 0, 20000;")
 filenames = cursor.fetchall()
 
 for list in filenames:
     filename = list[0]
     mvc = list[1]#already have mvc metric score
+    avgNumViewsPerXML = list[2]
+    maxNumViewsInXML = list[3]
     
     #get size metrics
     sizeQuery = 'SELECT * FROM SizeMetrics WHERE filename = \''+filename.replace('\'','\'\'')+'\' limit 0, 20000;'
@@ -41,6 +45,14 @@ for list in filenames:
     ppiv = result[0][5]
     apd = result[0][6]
     
+    #get other metrics
+    ooQuery = 'SELECT * FROM OtherMetrics WHERE filename = \''+filename.replace('\'','\'\'')+'\' limit 0, 20000;'
+    cursor.execute(ooQuery)
+    result = cursor.fetchall()
+    
+    uncheckedBundles = result[0][1]
+    potBadTokens = result[0][2]
+    
     #calcualate the new rating
     score = 0.0
     mpcScore = 0.0
@@ -54,6 +66,10 @@ for list in filenames:
     ppivScore = 0.0
     apdScore = 0.0
     mvcScore = 0.0
+    avgViewsScore = 0.0
+    maxViewsScore = 0.0
+    bundleScore = 0.0
+    tokenScore = 0.0
     
     if(mpc < 10):
         mpcScore = 5
@@ -150,9 +166,53 @@ for list in filenames:
         
     mvcScore = float(mvc) / 20
     
-    score = (mvcScore + mpcScore + ipmScore +cyclomaticScore + wmcScore + nocScore + ditScore + lcomScore + cboScore + ppivScore + apdScore) / 11.0
+    if avgNumViewsPerXML < 4:
+        avgViewsScore = 5
+    elif avgNumViewsPerXML < 6:
+        avgViewsScore = 4
+    elif avgNumViewsPerXML < 10:
+        avgViewsScore = 3
+    elif avgNumViewsPerXML < 20:
+        avgViewsScore = 2
+    elif avgNumViewsPerXML < 100:
+        avgViewsScore = 1
+        
+    if maxNumViewsInXML < 11:
+        maxViewsScore = 5
+    elif maxNumViewsInXML < 15:
+        maxViewsScore = 4
+    elif maxNumViewsInXML < 20:
+        maxViewsScore = 3
+    elif maxNumViewsInXML < 70:
+        maxViewsScore = 2
+    elif maxNumViewsInXML < 100:
+        maxViewsScore = 1
+        
+    if uncheckedBundles == 0:
+        bundleScore = 5
+    elif uncheckedBundles == 1:
+        bundleScore = 4
+    elif uncheckedBundles == 2:
+        bundleScore = 3
+    elif uncheckedBundles < 10:
+        bundleScore = 2
+    elif uncheckedBundles < 100:
+        bundleScore = 1
+        
+    if potBadTokens == 0:
+        tokenScore = 5
+    elif potBadTokens == 1:
+        tokenScore = 4
+    elif potBadTokens < 3:
+        tokenScore = 3
+    elif potBadTokens < 10:
+        tokenScore = 2
+    elif potBadTokens < 20:
+        tokenScore = 1
     
-    query = 'INSERT into MetricScores values (\''+filename.replace('\'','\'\'')+'\', ' + str(score) + ', ' + str(mvcScore) + ', ' + str(mpcScore) + ', ' + str(ipmScore) + ', ' + str(cyclomaticScore)+ ', ' + str(wmcScore)+ ', ' + str(nocScore)+ ', ' + str(ditScore)+ ', ' + str(lcomScore) + ', ' + str(cboScore) + ', ' + str(ppivScore) + ', ' + str(apdScore) +')'
+    score = (mvcScore + mpcScore + ipmScore +cyclomaticScore + wmcScore + nocScore + ditScore + lcomScore + cboScore + ppivScore + apdScore + avgViewsScore + maxViewsScore + bundleScore + tokenScore) / 15.0
+    
+    query = 'INSERT into MetricScores values (\''+filename.replace('\'','\'\'')+'\', ' + str(score) + ', ' + str(mvcScore) + ', ' + str(mpcScore) + ', ' + str(ipmScore) + ', ' + str(cyclomaticScore)+ ', ' + str(wmcScore)+ ', ' + str(nocScore)+ ', ' + str(ditScore)+ ', ' + str(lcomScore) + ', ' + str(cboScore) + ', ' + str(ppivScore) + ', ' + str(apdScore) + ', ' + str(avgViewsScore) + ', ' + str(maxViewsScore) + ', ' + str(bundleScore) + ', ' + str(tokenScore) +')'
     cursor.execute(query)
     
 db.close()

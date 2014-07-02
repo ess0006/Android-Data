@@ -7,14 +7,12 @@ import os
 import DBWriter
 import re
 
-dataDirectory = "C:\\Users\\Billy Symon\\Desktop\\Grad Research\\GRAD THESIS [BACKUP_DO_NOT_USE]\\Decompiled Files\\"
-markets = ["appsforadam", "andapponline", "apptown"]
+dataDirectory = "C:\\apks\\decompiled"
+markets = ["appsapk", "fdroid", "slideme"]
 
-slideMeDirectory ="C:\\Users\\Billy Symon\\Desktop\\Grad Research\\GRAD THESIS [BACKUP_DO_NOT_USE]\\Decompiled Files\\slideme\\"
-slideMeDirs = ["1","2","3","4","5"]
 
 def extractLanguageLocData(location, market):
-    path = location + market
+    path = location+'\\'+market
     files = os.listdir(path)
     directorySize = len(files)
     
@@ -24,7 +22,7 @@ def extractLanguageLocData(location, market):
     print "!"*150
     
     i = 1
-    for f in files:
+    for f in files[14001:14418]:
         layouts = []
         drawable = []
         resFilePath = path + "\\"+ f +'\\res'    
@@ -54,6 +52,7 @@ def extractLanguageLocData(location, market):
                 DBWriter.writeDrawableLocDataEntry(filename, draw)
             print "drawable"
             print drawable   
-        
-extractLanguageLocData(slideMeDirectory, slideMeDirs[4])
- 
+
+#extractLanguageLocData(dataDirectory, markets[0])
+#extractLanguageLocData(dataDirectory, markets[1])
+extractLanguageLocData(dataDirectory, markets[2])

@@ -27,9 +27,10 @@ class MVCMetrics(object):
         self.maxNumViewsInXML = 0
         self.sepVCScore = 0.0
         self.potBadToken = 0
+        self.numFragments = 0
         
     def getNumberofFiles(self):
-        return self.numFiles
+        return self.numSrcFiles
     
     def extractData(self):
         for path in self.srcpaths:
@@ -67,6 +68,8 @@ class MVCMetrics(object):
         tempMax = 0
         viewRegex = "<" + AndroidViews.getAndroidViewsRegex()
         for line in fileinput.input([path]):
+                if "<fragment" in line:
+                    self.numFragments = self.numFragments + 1
                 numMatches = len(re.findall(viewRegex, line))
                 self.numViewsNotInController = self.numViewsNotInController + numMatches
                 self.numViewsInXML = self.numViewsInXML + numMatches
@@ -99,6 +102,9 @@ class MVCMetrics(object):
     
     def getPotentialBadTokenExceptions(self):
         return self.potBadToken
+    
+    def getNumFragments(self):
+        return self.numFragments
     
     def printData(self):
         print "Num views in controllers: " + str(self.numViewsInController)

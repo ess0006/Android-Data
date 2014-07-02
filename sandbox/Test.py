@@ -10,6 +10,9 @@ if __name__ == '__main__':
 numInstr = 0
 path = "C:\\Users\\ess0006\\Documents\\androidviews.txt"
 
-for line in fileinput.input([path]):
-    line = line.replace("\n","")
-    print line + "\"," 
+lines = tuple(open('C:\\apks\\db\\dem_db.txt', 'r'))
+for line in lines:
+    print line
+#for line in fileinput.input([path]):
+    #line = line.replace("\n","")
+    #print line + "\"," 

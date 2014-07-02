@@ -11,6 +11,9 @@ import SizeMetrics
 import CKMetrics
 import MVCMetrics
 import OtherMetrics
+import BadSmellMethodCalls
+import UncheckedBadSmellMethodCalls
+import BatteryMetrics
 import DBWriter
 import sys
 import traceback
@@ -96,7 +99,7 @@ def extractData(location, market):
                 print sourceCodePaths
                 
                 if len(sourceCodePaths) == 0:
-                    errorFile.write(f + ": No source code files\n")
+                    #errorFile.write(f + ": No source code files\n")
                     continue
                 
                 layoutPath = decFolderPath + '\\res\\layout'
@@ -107,7 +110,7 @@ def extractData(location, market):
                 print layoutFilePaths
                 
                 #calculate size metrics
-                sizeMetrics = SizeMetrics.SizeMetrics(sourceCodePaths)
+                """sizeMetrics = SizeMetrics.SizeMetrics(sourceCodePaths)
                 sizeMetrics.extractData()
                 numInstructions = sizeMetrics.getNumInstructions()
                 numMethods = sizeMetrics.getNumMethods()
@@ -129,32 +132,75 @@ def extractData(location, market):
                 
                 #calculate MVC metrics
                 mvcMetrics =MVCMetrics.MVCMetrics(sourceCodePaths, layoutFilePaths)
-                if appLabel == "3D Player":
-                    print ""
                 mvcMetrics.extractData()
                 mvc = mvcMetrics.getSepVCScore()
                 avgNumViewsInXML = mvcMetrics.getAvgNumViewsInXML()
                 maxNumViewsInXML = mvcMetrics.getMaxNumViewsInXML()
                 potBadToken = mvcMetrics.getPotentialBadTokenExceptions()
+                numFragments = mvcMetrics.getNumFragments()
+                
                 
                 #calculate other metrics
                 otherMetrics = OtherMetrics.OtherMetrics(sourceCodePaths, layoutFilePaths)
                 otherMetrics.extractData()
                 uncheckedBundles = otherMetrics.getNumUncheckedBundles()
+                objMap = otherMetrics.getObjectMap()
                 
-                db.writeAppTable(filename, appLabel, packageName, market)
+                #bad smell methods
+                bsmc = BadSmellMethodCalls.BadSmellMethodCalls(sourceCodePaths, layoutFilePaths)
+                bsmc.extractData()
+                show = bsmc.getNumShowCalls()
+                dismiss = bsmc.getNumDismissCalls()
+                setContentView = bsmc.getNumSetContentViewCalls()
+                createScaledBitmap = bsmc.getNumCreateScaledBitmapCalls()
+                onKeyDown = bsmc.getNumOnKeyDownCalls()
+                isPlaying = bsmc.getNumIsPlayingCalls()
+                unregisterReceiver = bsmc.getNumUnregisterRecieverCalls()
+                onBackPressed = bsmc.getNumOnBackPressedCalls()
+                showDialog = bsmc.getNumShowDialogCalls()
+                create = bsmc.getNumCreateCalls()
+                
+                #checked bad smell methods
+                cbsmc = UncheckedBadSmellMethodCalls.UncheckedBadSmellMethodCalls(sourceCodePaths, layoutFilePaths)
+                cbsmc.extractData()
+                cshow = cbsmc.getNumShowCalls()
+                cdismiss = cbsmc.getNumDismissCalls()
+                csetContentView = cbsmc.getNumSetContentViewCalls()
+                ccreateScaledBitmap = cbsmc.getNumCreateScaledBitmapCalls()
+                conKeyDown = cbsmc.getNumOnKeyDownCalls()
+                cisPlaying = cbsmc.getNumIsPlayingCalls()
+                cunregisterReceiver = cbsmc.getNumUnregisterRecieverCalls()
+                conBackPressed = cbsmc.getNumOnBackPressedCalls()
+                cshowDialog = cbsmc.getNumShowDialogCalls()
+                ccreate = cbsmc.getNumCreateCalls()"""
+                
+                #Battery Life metrics
+                batteryMetrics = BatteryMetrics.BatteryMetrics(sourceCodePaths, layoutFilePaths)
+                batteryMetrics.extractData()
+                noTimeoutWakeLocks = batteryMetrics.getNumNoTimeoutWakeLocks()
+                locListeners = batteryMetrics.getNumLocationListeners()
+                gpsUses = batteryMetrics.getNumGpsUses()
+                domParsers = batteryMetrics.getNumDomParsers()
+                saxParsers = batteryMetrics.getNumSaxParsers()
+                xmlPullParsers = batteryMetrics.getNumXMLPullParsers()
+                
+                """db.writeAppTable(filename, appLabel, packageName, market)
                 db.writeSizeMetricsTable(filename, numInstructions, numMethods, numClasses, methodsPerClass, instrPerMethod, cyclomatic, wmc)
                 db.writeOOMetricsTable(filename, noc, dit, lcom, cbo, ppiv, apd)
                 db.writeMVCMetricsTable(filename, mvc, avgNumViewsInXML, maxNumViewsInXML)
                 db.writeOtherMetricsTable(filename, uncheckedBundles, potBadToken)
-                
+                db.updateNumFragments(filename,numFragments)
+                db.writeAndroidObjectsTable(filename, objMap)
+                db.writeBadSmellMethodCallsTable(filename, show, dismiss, setContentView, createScaledBitmap, onKeyDown, isPlaying, unregisterReceiver, onBackPressed, showDialog, create)
+                db.writeUncheckedBadSmellMethodCallsTable(filename, cshow, cdismiss, csetContentView, ccreateScaledBitmap, conKeyDown, cisPlaying, cunregisterReceiver, conBackPressed, cshowDialog, ccreate)"""
+                db.writeBatteryMetrics(filename, noTimeoutWakeLocks, locListeners, gpsUses, domParsers, saxParsers, xmlPullParsers)
             else:
                 print "ERROR FOUND WITH FILE AndroidManifest.xml"
-                errorFile.write(f + ": ERROR FOUND WITH FILE AndroidManifest.xml\n")
+                #errorFile.write(f + ": ERROR FOUND WITH FILE AndroidManifest.xml\n")
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            errorFile.write(f + ": " + ''.join('!! ' + line for line in lines) +"\n")
+            #errorFile.write(f + ": " + ''.join('!! ' + line for line in lines) +"\n")
     errorFile.close()
         
 if __name__ == "__main__":

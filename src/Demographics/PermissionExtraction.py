@@ -6,7 +6,7 @@ Created on Mar 31, 2012
 import MySQLdb as mdb
 import sys
 
-markets = ["appsforadam","andapponline","apptown","slideme"]
+markets = ["appsapk", "fdroid", "slideme"]
 
 permissions = ["ACCESS_CHECKIN_PROPERTIES",
                "ACCESS_COARSE_LOCATION",
@@ -23,12 +23,16 @@ permissions = ["ACCESS_CHECKIN_PROPERTIES",
                "BIND_APPWIDGET",
                "BIND_DEVICE_ADMIN",
                "BIND_INPUT_METHOD",
-               "BIND_REMOTE_VIEWS",
+               "BIND_NFC_SURFACE",
+               "BIND_NOTIFICATION_LISTENER_SERVICE",
+               "BIND_PRINT_SERVICE",
+               "BIND_REMOTEVIEWS",
                "BIND_TEXT_SERVICE",
                "BIND_VPN_SERVICE",
                "BIND_WALLPAPER",
                "BLUETOOTH",
                "BLUETOOTH_ADMIN",
+               "BLUETOOTH_PRIVILIGED",              
                "BRICK",
                "BROADCAST_PACKAGE_REMOVED",
                "BROADCAST_SMS",
@@ -37,6 +41,9 @@ permissions = ["ACCESS_CHECKIN_PROPERTIES",
                "CALL_PHONE",
                "CALL_PRIVILEGED",
                "CAMERA",
+               "CAPTURE_AUDIO_OUTPUT",
+               "CAPTURE_SECURE_VIDEO_OUTPUT",
+               "CAPTURE_VIDEO_OUTPUT",
                "CHANGE_COMPONENT_ENABLED_STATE",
                "CHANGE_CONFIGURATION",
                "CHANGE_NETWORK_STATE",
@@ -66,9 +73,12 @@ permissions = ["ACCESS_CHECKIN_PROPERTIES",
                "INTERNAL_SYSTEM_WINDOW",
                "INTERNET",
                "KILL_BACKGROUND_PROCESSES",
+               "LOCATION_HARDWARE",
                "MANAGE_ACCOUNTS",
                "MANAGE_APP_TOKENS",
+               "MANAGE_DOCUMENTS",
                "MASTER_CLEAR",
+               "MEDIA_CONTENT_CONTROL",
                "MODIFY_AUDIO_SETTINGS",
                "MODIFY_PHONE_STATE",
                "MOUNT_FORMAT_FILESYSTEMS",
@@ -77,7 +87,9 @@ permissions = ["ACCESS_CHECKIN_PROPERTIES",
                "PERSISTENT_ACTIVITY",
                "PROCESS_OUTGOING_CALLS",
                "READ_CALENDAR",
+               "READ_CALL_LOG",
                "READ_CONTACTS",
+               "READ_EXTERNAL_STORAGE",
                "READ_FRAME_BUFFER",
                "READ_HISTORY_BOOKMARKS",
                "READ_INPUT_STATE",
@@ -88,6 +100,7 @@ permissions = ["ACCESS_CHECKIN_PROPERTIES",
                "READ_SOCIAL_STREAM",
                "READ_SYNC_SETTINGS",
                "READ_SYNC_STATS",
+               "READ_USER_DICTIONARY",
                "REBOOT",
                "RECEIVE_BOOT_COMPLETED",
                "RECEIVE_MMS",
@@ -115,13 +128,16 @@ permissions = ["ACCESS_CHECKIN_PROPERTIES",
                "SUBSCRIBED_FEEDS_READ",
                "SUBSCRIBED_FEEDS_WRITE",
                "SYSTEM_ALERT_WINDOW",
-               "UPDATE_DEVICE_STATUS",
+               "TRANSMIT_IR",
+               "UNINSTALL_SHORTCUT",
+               "UPDATE_DEVICE_STATS",
                "USE_CREDENTIALS",
                "USE_SIP",
                "VIBRATE",
                "WAKE_LOCK",
-               "WRITE_APN_SETTIGNS",
+               "WRITE_APN_SETTINGS",
                "WRITE_CALENDAR",
+               "WRITE_CALL_LOG",
                "WRITE_CONTACTS",
                "WRITE_EXTERNAL_STORAGE",
                "WRITE_GSERVICES",
@@ -131,7 +147,8 @@ permissions = ["ACCESS_CHECKIN_PROPERTIES",
                "WRITE_SETTINGS",
                "WRITE_SMS",
                "WRITE_SOCIAL_STREAM",
-               "WRITE_SYNC_SETTINGS"]
+               "WRITE_SYNC_SETTINGS",
+               "WRITE_USER_DICTIONARY"]
 
 zeroValuePermissions =["ADD_VOICEMAIL",
                        "BIND_REMOTEVIEWS",
@@ -160,7 +177,12 @@ zeroValuePermissions =["ADD_VOICEMAIL",
                        "WRITE_SOCIAL_STREAM"]
 
 def connect():
-    return mdb.connect('localhost', 'root', '', 'thesis');
+    host, username, password, db = readFile('C:\\apks\\db\\dem_db.txt')
+    return mdb.connect(host, username, password, db);
+
+def readFile(filePath):
+    lines = tuple(open(filePath, 'r'))
+    return lines[0].replace("\n", ""), lines[1].replace("\n", ""), lines[2].replace("\n", ""), lines[3].replace("\n", "")
 
 def executeDBCommand(command):
     con = connect()
@@ -189,11 +211,20 @@ def getRequestedPermissionCountByMarket(permission, market):
 def getTotalRequestedPermissionCount(permission):
     return executeDBCommand("SELECT COUNT(*) FROM permissions_requested WHERE permission = \" android.permission."+permission+"\"")
 
-for permission in zeroValuePermissions:
+"""for permission in permissions:
     print "~"*50
     print "Permission -> " + permission
     print "~"*50
     for market in markets:
         print market + " -> " + str(getRequestedPermissionCountByMarket(permission, market))
     print "TOTAL -> " + str(getTotalRequestedPermissionCount(permission))
-    print "*"*50
+    print "*"*50"""
+    
+for permission in permissions:
+    f2 = open('permissions.csv','a')
+    
+    if getTotalRequestedPermissionCount(permission) != 0 and permission not in zeroValuePermissions:
+        print permission
+        print "TOTAL -> " + str(getTotalRequestedPermissionCount(permission))
+        f2.write(permission + "," + str(getTotalRequestedPermissionCount(permission)) + "\n")
+    f2.close() # you can omit in most cases as the destructor will call if
