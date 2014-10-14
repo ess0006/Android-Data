@@ -75,6 +75,7 @@ ANDROID_VIEWS = ["AbsListView",
                 "ZoomButtonsController",
                 "ZoomControls"]
 
+""" Gets a regular expression of all view objects in Android """
 def getAndroidViewsRegex():
     regex = "("
     first = True
@@ -86,5 +87,3 @@ def getAndroidViewsRegex():
         regex = regex + view
     regex = regex + ")"
     return regex
-                         
-print getAndroidViewsRegex()

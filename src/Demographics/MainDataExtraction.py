@@ -49,6 +49,9 @@ def extractData(location, market):
                     fileSize = 0
                     writeError("?????"+filePath, "Error when gathering file size data")
                 print "File Size -> " + str(fileSize) +" bytes"
+                
+                dirSizes = getDirSizes(filePath)
+                libs = getLibContents(filePath)
             
                 ####THE REMAINING EXTRACTED INFORMATION COMES FROM THE MANIFEST.XML FILE#####
                 if os.path.exists(filePath+"\\AndroidManifest.xml"):
@@ -225,8 +228,10 @@ def extractData(location, market):
                 DBWriter.writeAditionalInfoTableEnrty(fileName, numLibraries, numLayouts, numStrings, minSDKLevel, altLayouts, altStrings)
                 DBWriter.writeLibrariesTableEnrty(fileName, libraries)
                 DBWriter.writeMasterEntry(fileName, market, fileSize, appLabel, appFQName, numPermissionsUsed, numPermissionsSetUp, numPremissionsRequired, numActivities, numServices, numReceivers, numProviders, numLibraries, numLayouts, numStrings, minSDKLevel, altLayouts, altStrings)
-                DBWriter.updateMasterMinSDK(fileName, minSDKLevel)"""
+                DBWriter.updateMasterMinSDK(fileName, minSDKLevel)
                 DBWriter.updateMasterTargetSDK(fileName, targetSDKLevel)
+                DBWriter.writeFolderSizes(fileName, dirSizes)"""
+                DBWriter.writeLibs(fileName,libs)
                 print ""  
                                        
             else:
@@ -245,6 +250,35 @@ def getFileSize(start_path):
             fp = os.path.join(dirpath, f)
             total_size += os.path.getsize(fp)
     return total_size
+
+def getDirSizes(start_path):
+    map = {}
+    dirs = os.listdir(start_path)
+    for dir in dirs:
+        if not '.' in dir:
+            for dirpath, dirnames, filenames in os.walk(start_path + "\\" + dir):
+                for f in filenames:
+                    fp = os.path.join(dirpath, f)
+                    if dir in map:
+                        map[dir] += os.path.getsize(fp)
+                    else:
+                        map[dir] = os.path.getsize(fp)
+    return map
+
+def getLibContents(start_path):
+    path = ""
+    libs = []
+    if os.path.exists(start_path + "\\libs"):
+        path = start_path + "\\libs"
+    elif os.path.exists(start_path + "\\lib"):
+        path = start_path + "\\lib"
+    else:
+        return libs
+    for dirpath, dirnames, filenames in os.walk(path):
+        for f in filenames:
+            if not f in libs:
+                libs.append(f)
+    return libs
 
 def extractNumStrings(path):
     if os.path.exists(path+"\\res\\values\\strings.xml"):

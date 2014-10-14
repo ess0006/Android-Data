@@ -1,4 +1,5 @@
 '''
+This class looks for method calls that are known to cause exceptions, based on the list presented in http://istlab.dmst.aueb.gr/~mkehagia/api-exceptions.pdf
 Created on Jun 27, 2014
 
 @author: Eric Shaw
@@ -8,10 +9,6 @@ import fileinput
 import AndroidViews
 
 class UncheckedBadSmellMethodCalls(object):
-    '''
-    This class looks for method calls that are known to cause exceptions, based on the list presented in http://istlab.dmst.aueb.gr/~mkehagia/api-exceptions.pdf
-    '''
-    
 
     def __init__(self, sourceCodePaths, layoutPaths):
         '''
@@ -50,34 +47,34 @@ class UncheckedBadSmellMethodCalls(object):
                 if line.startswith(":try_start"):
                     self.inTryCatch = True
                 else:
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->dismiss()", line)
+                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->dismiss\(", line)
                     if len(matches) > 0:
                         self. dismiss = self.dismiss + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->show()", line)
+                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->show\(", line)
                     if len(matches) > 0:
                         self.show = self.show + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->setContentView()", line)
+                    matches = re.findall("invoke-virtual (.*?), (.*?);->setContentView\(", line)
                     if len(matches) > 0:
                         self.setContentView = self.setContentView + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->createScaledBitmap()", line)
+                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->createScaledBitmap\(", line)
                     if len(matches) > 0:
                         self. createScaledBitmap = self.createScaledBitmap + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->onKeyDown()", line)
+                    matches = re.findall("invoke-virtual (.*?), (.*?);->onKeyDown\(", line)
                     if len(matches) > 0:
                         self.onKeyDown = self.onKeyDown + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->isPlaying()", line)
+                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->isPlaying\(", line)
                     if len(matches) > 0:
                         self.isPlaying = self.isPlaying + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->unregisterReceiver()", line)
+                    matches = re.findall("invoke-virtual (.*?), (.*?);->unregisterReceiver\(", line)
                     if len(matches) > 0:
                         self.unregisterReceiver = self.unregisterReceiver + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->onBackPressed()", line)
+                    matches = re.findall("invoke-virtual (.*?), (.*?);->onBackPressed\(", line)
                     if len(matches) > 0:
                         self. onBackPressed = self.onBackPressed + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->showDialog()", line)
+                    matches = re.findall("invoke-virtual (.*?), (.*?);->showDialog\(", line)
                     if len(matches) > 0:
                         self.showDialog = self.showDialog + 1
-                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->create()", line)
+                    matches = re.findall("invoke-virtual (.*?), Landroid/(.*?);->create\(", line)
                     if len(matches) > 0:
                         self.create = self.create + 1
             else:

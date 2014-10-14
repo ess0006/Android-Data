@@ -1,6 +1,8 @@
 import MySQLdb
 
 '''
+This class was originally intended to score apps based on metrics.  However, we did not follow this technique in the end,
+opting instead to compare apps based on market ratings.
 Created on Mar 15, 2014
 
 @author: Eric

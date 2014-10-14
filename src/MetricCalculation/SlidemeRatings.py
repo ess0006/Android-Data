@@ -1,4 +1,5 @@
 '''
+This class collects app ratings and other metadata about the slideme apps.
 Created on Jan 28, 2014
 
 @author: Eric

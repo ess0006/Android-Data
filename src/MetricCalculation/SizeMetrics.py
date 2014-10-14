@@ -1,4 +1,5 @@
 '''
+This class collects metrics related to code size.
 Created on Jan 23, 2014
 
 @author: ess0006

@@ -1,6 +1,5 @@
 '''
-This class collects data on unchecked bundles and Android objects used
-*****Bundle logic has been changed, use UncheckedBundles.py
+This class counts the number of unchecked Intent Bundles per app.
 Created on Jan 27, 2014
 
 @author: ess0006
@@ -9,7 +8,7 @@ import re
 import fileinput
 import AndroidViews
 
-class OtherMetrics(object):
+class UncheckedBundles(object):
     '''
     classdocs
     '''
@@ -25,7 +24,7 @@ class OtherMetrics(object):
         self.numLayoutFiles = len(self.layoutPaths)
         self.numBundles = 0
         self.numCheckedBundles = 0
-        self.objMap = {}
+        self.inTryCatch = False
         
     def getNumberofFiles(self):
         return self.numFiles
@@ -40,13 +39,17 @@ class OtherMetrics(object):
     def extractSrcFileData(self, path):
         fileinput.close()
         bundleAssignment = ".local (.*?):Landroid/os/Bundle;"
-        androidObj = "Landroid/(.*?)/(.*?);";
         bundleRegisters = []
+        self.inTryCatch = False
         for line in fileinput.input([path]):
+            if line.startswith(":try_start"):
+                self.inTryCatch = True
+            if line.startswith(":try_end"):
+                self.inTryCatch = False
             matches = re.findall(bundleAssignment, line)
             if len(matches) > 0 and not ".end" in line:
                 reg = matches[0][0:matches[0].find(",")]
-                if not reg in bundleRegisters:
+                if not reg in bundleRegisters and not self.inTryCatch:
                     bundleRegisters.append(reg)
                 self.numBundles = self.numBundles + 1
             else:
@@ -60,19 +63,7 @@ class OtherMetrics(object):
                             regName = reg
                     if regName != "":
                         bundleRegisters.remove(regName)
-            objMatches = re.findall(androidObj, line)
-            if len(objMatches) > 0:
-                for tuple in objMatches:
-                    list = []
-                    list.append('android')
-                    list.append(tuple[0])
-                    list.append(tuple[1])
-                    fulQual = '.'.join(list)
-                    fulQual = fulQual.replace('$', '.')
-                    if fulQual in self.objMap:
-                        self.objMap[fulQual] = self.objMap[fulQual] + 1
-                    else:
-                        self.objMap[fulQual] = 1
+           
     
     def extractLayoutFileData(self, path):
         fileinput.close()
@@ -81,6 +72,8 @@ class OtherMetrics(object):
         for line in fileinput.input([path]):
                 numMatches = len(re.findall(viewRegex, line))
                 
+    def getNumCheckedBundles(self):
+        return self.numCheckedBundles
     
     def getNumUncheckedBundles(self):
         return self.numBundles - self.numCheckedBundles

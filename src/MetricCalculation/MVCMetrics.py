@@ -1,4 +1,5 @@
 '''
+This class collects view related metrics on the apps.
 Created on Jan 27, 2014
 
 @author: ess0006

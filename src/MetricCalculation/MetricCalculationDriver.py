@@ -1,7 +1,11 @@
 '''
+This is the driver program for the collection of quality related metrics on a set of reverse engineered .apk files.
+Before running, the user should set up his database to match the expected schemas.  I would recommend commenting out
+the db.write methods at first to ensure the program runs properly.  Once the DB is set up, only the extractData method
+needs to be changed to hold the correct paths to your apps.
 Created on Jan 22, 2014
 
-@author: ess0006
+@author: Eric Shaw
 '''
 import os
 import os.path
@@ -14,6 +18,10 @@ import OtherMetrics
 import BadSmellMethodCalls
 import UncheckedBadSmellMethodCalls
 import BatteryMetrics
+import BlackHole
+import NetworkTimeout
+import ANRMetrics
+import IntentLaunchMetrics
 import DBWriter
 import sys
 import traceback
@@ -109,8 +117,9 @@ def extractData(location, market):
                         
                 print layoutFilePaths
                 
+                """
                 #calculate size metrics
-                """sizeMetrics = SizeMetrics.SizeMetrics(sourceCodePaths)
+                sizeMetrics = SizeMetrics.SizeMetrics(sourceCodePaths)
                 sizeMetrics.extractData()
                 numInstructions = sizeMetrics.getNumInstructions()
                 numMethods = sizeMetrics.getNumMethods()
@@ -144,7 +153,7 @@ def extractData(location, market):
                 otherMetrics = OtherMetrics.OtherMetrics(sourceCodePaths, layoutFilePaths)
                 otherMetrics.extractData()
                 uncheckedBundles = otherMetrics.getNumUncheckedBundles()
-                objMap = otherMetrics.getObjectMap()
+                objMap = otherMetrics.getObjectMap()"""
                 
                 #bad smell methods
                 bsmc = BadSmellMethodCalls.BadSmellMethodCalls(sourceCodePaths, layoutFilePaths)
@@ -172,8 +181,9 @@ def extractData(location, market):
                 cunregisterReceiver = cbsmc.getNumUnregisterRecieverCalls()
                 conBackPressed = cbsmc.getNumOnBackPressedCalls()
                 cshowDialog = cbsmc.getNumShowDialogCalls()
-                ccreate = cbsmc.getNumCreateCalls()"""
+                ccreate = cbsmc.getNumCreateCalls()
                 
+                """
                 #Battery Life metrics
                 batteryMetrics = BatteryMetrics.BatteryMetrics(sourceCodePaths, layoutFilePaths)
                 batteryMetrics.extractData()
@@ -184,7 +194,53 @@ def extractData(location, market):
                 saxParsers = batteryMetrics.getNumSaxParsers()
                 xmlPullParsers = batteryMetrics.getNumXMLPullParsers()
                 
-                """db.writeAppTable(filename, appLabel, packageName, market)
+                #network timeout metrics
+                networkTimeout = NetworkTimeout.NetworkTimeout(sourceCodePaths, layoutFilePaths)
+                networkTimeout.extractData()
+                httpClients = networkTimeout.getNumHttpClients()
+                numConTimeouts = networkTimeout.getNumConTimeouts()
+                numSoTimeouts = networkTimeout.getNumSoTimeouts()
+                numNoConTimeouts = networkTimeout.getNumNoConTimeout()
+                numNoSoTimeouts = networkTimeout.getNumNoSoTimeout()
+                
+                #black hole exception handling
+                blackHole = BlackHole.BlackHole(sourceCodePaths, layoutFilePaths)
+                blackHole.extractData()
+                numCatchBlocks = blackHole.getNumCatchBlocks()
+                numLogOnly = blackHole.getNumLogOnly()
+                numNoAction = blackHole.getNumNoAction()
+                
+                #ANR Metrics
+                anrMetrics = ANRMetrics.ANRMetrics(sourceCodePaths, layoutFilePaths)
+                anrMetrics.extractData()
+                network = anrMetrics.getNumNetworkOnMainThread()
+                sqlLite = anrMetrics.getNumSQLLiteOnMainThread()
+                fileIO = anrMetrics.getNumFileIOOnMainThread()
+                bitmap = anrMetrics.getNumBitmapOnMainThread()
+                networkBg = anrMetrics.getNumNetworkOnBgThread()
+                sqlLiteBg = anrMetrics.getNumSQLLiteOnBgThread()
+                fileIOBg = anrMetrics.getNumFileIOOnBgThread()
+                bitmapBg = anrMetrics.getNumBitmapOnBgThread()
+                
+                #intent launch metrics
+                intentLaunchMetrics = IntentLaunchMetrics.IntentLaunchMetrics(sourceCodePaths, layoutFilePaths, packageName)
+                intentLaunchMetrics.extractData()
+                startActivities = intentLaunchMetrics.getNumStartActivities()
+                startActivity = intentLaunchMetrics.getNumStartActivity()
+                startInstrumentation = intentLaunchMetrics.getNumStartInstrumentation()
+                startIntentSender = intentLaunchMetrics.getNumStartIntentSender()
+                startService = intentLaunchMetrics.getNumStartService()
+                startActionMode = intentLaunchMetrics.getNumStartActionMode()
+                startActivityForResult = intentLaunchMetrics.getNumStartActivityForResult()
+                startActivityFromChild = intentLaunchMetrics.getNumStartActivityFromChild()
+                startActivityFromFragment = intentLaunchMetrics.getNumStartActivityFromFragment()
+                startActivityIfNeeded = intentLaunchMetrics.getNumStartActivityIfNeeded()
+                startIntentSenderForResult = intentLaunchMetrics.getNumStartIntentSenderForResult()
+                startIntentSenderFromChild = intentLaunchMetrics.getNumStartIntentSenderFromChild()
+                startNextMatchingActivity = intentLaunchMetrics.getNumStartNextMatchingActivity()
+                startSearch = intentLaunchMetrics.getNumStartSearch()
+                
+                db.writeAppTable(filename, appLabel, packageName, market)
                 db.writeSizeMetricsTable(filename, numInstructions, numMethods, numClasses, methodsPerClass, instrPerMethod, cyclomatic, wmc)
                 db.writeOOMetricsTable(filename, noc, dit, lcom, cbo, ppiv, apd)
                 db.writeMVCMetricsTable(filename, mvc, avgNumViewsInXML, maxNumViewsInXML)
@@ -192,8 +248,13 @@ def extractData(location, market):
                 db.updateNumFragments(filename,numFragments)
                 db.writeAndroidObjectsTable(filename, objMap)
                 db.writeBadSmellMethodCallsTable(filename, show, dismiss, setContentView, createScaledBitmap, onKeyDown, isPlaying, unregisterReceiver, onBackPressed, showDialog, create)
-                db.writeUncheckedBadSmellMethodCallsTable(filename, cshow, cdismiss, csetContentView, ccreateScaledBitmap, conKeyDown, cisPlaying, cunregisterReceiver, conBackPressed, cshowDialog, ccreate)"""
+                db.writeUncheckedBadSmellMethodCallsTable(filename, cshow, cdismiss, csetContentView, ccreateScaledBitmap, conKeyDown, cisPlaying, cunregisterReceiver, conBackPressed, cshowDialog, ccreate)
                 db.writeBatteryMetrics(filename, noTimeoutWakeLocks, locListeners, gpsUses, domParsers, saxParsers, xmlPullParsers)
+                db.writeNetworkTimeoutMetrics(filename, httpClients, numConTimeouts, numSoTimeouts, numNoConTimeouts, numNoSoTimeouts)
+                db.writeBlackHole(filename, numCatchBlocks, numLogOnly, numNoAction)
+                db.writeANRMetrics(filename, network, sqlLite, fileIO, bitmap, networkBg, sqlLiteBg, fileIOBg, bitmapBg)
+                db.writeIntentLaunchMetrics(filename, startActivities, startActivity, startInstrumentation, startIntentSender, startService, startActionMode, startActivityForResult, startActivityFromChild, startActivityFromFragment, startActivityIfNeeded, startIntentSenderForResult, startIntentSenderFromChild, startNextMatchingActivity, startSearch)"""
+                db.updateCreateScaledBitmap(filename, ccreateScaledBitmap)
             else:
                 print "ERROR FOUND WITH FILE AndroidManifest.xml"
                 #errorFile.write(f + ": ERROR FOUND WITH FILE AndroidManifest.xml\n")

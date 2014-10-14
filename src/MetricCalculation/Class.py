@@ -1,14 +1,11 @@
 '''
+Represents a java class
 Created on Jan 23, 2014
 
 @author: ess0006
 '''
 
 class Class(object):
-    '''
-    Represents a java class
-    '''
-
 
     def __init__(self):
         '''

@@ -115,3 +115,13 @@ def updateMasterMinSDK(fileName,sdk):
 def updateMasterTargetSDK(fileName,sdk):
     command = "UPDATE master SET targetSDKLevel = \'" + sdk + "\' WHERE filename = " + "\'" + fileName + "\'"
     executeDBCommand(command);
+    
+def writeFolderSizes(fileName,dirSizes):
+    for name in dirSizes:
+        command = "INSERT into folderSizes VALUES (\""+fileName+"\",\""+name+"\","+str(dirSizes[name])+")"
+        executeDBCommand(command);
+
+def writeLibs(fileName, libs):
+    for lib in libs:
+        command = "INSERT into libsContent VALUES (\""+fileName+"\",\""+str(lib)+"\")"
+        executeDBCommand(command);

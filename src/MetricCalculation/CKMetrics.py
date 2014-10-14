@@ -1,7 +1,8 @@
 '''
+This class collects several object oriented metrics originally suggested by Chidamber and Kemerer.
 Created on Jan 23, 2014
 
-@author: ess0006
+@author: Eric Shaw
 '''
 import fileinput
 import Class
@@ -121,7 +122,7 @@ class CKMetrics(object):
         for aClass in self.classes:
             if(len(aClass.getFields()) == 0) or (len(aClass.getMethods()) == 0):
                 continue
-            numFieldCalls = 0
+            #numFieldCalls = 0
             methodLCOM = []
             fieldcount = {} #number of methods using each field in a class
             for aField in aClass.getFields():

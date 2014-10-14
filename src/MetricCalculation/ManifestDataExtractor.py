@@ -4,9 +4,11 @@ import xml.dom.minidom as minidom
 
 
 '''
+Collects data from the AndroidManifest.xml file
 Created on Jan 23, 2014
 
-@author: ess0006
+@author: Billy Simon
+@author: Eric Shaw
 '''
 
 class ManifestDataExtractor(object):

@@ -1,4 +1,5 @@
 '''
+Metrics gleaned from Google I/O presentation http://www.youtube.com/watch?v=OUemfrKe65c&feature=player_embedded
 Created on Jun 27, 2014
 
 @author: Eric Shaw
@@ -7,9 +8,6 @@ import fileinput
 import re
 
 class BatteryMetrics(object):
-    '''
-    Metrics gleaned from Google I/O presentation http://www.youtube.com/watch?v=OUemfrKe65c&feature=player_embedded
-    '''
 
 
     def __init__(self, sourceCodePaths, layoutPaths):

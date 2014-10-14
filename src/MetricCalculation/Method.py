@@ -1,7 +1,8 @@
 '''
+This class represents a java method.
 Created on Jan 24, 2014
 
-@author: ess0006
+@author: Eric Shaw
 '''
 
 class Method(object):
